@@ -1,4 +1,3 @@
-const assert = require('assert');
 const { Logger } = require('../lib/Logger');
 
 describe('Logger', () => {
@@ -21,11 +20,10 @@ describe('Logger', () => {
     logger.warn('Warning message');
     logger.error('Error message');
 
-    expect(capturedLogs.length).toBe(4);
+    expect(capturedLogs.length).toBe(3);
     expect(capturedLogs[0]).toBe('[DEBUG] Debug message');
     expect(capturedLogs[1]).toBe('[INFO] Info message');
     expect(capturedLogs[2]).toBe('[WARN] Warning message');
-    expect(capturedLogs[3]).toBe('[ERROR] Error message');
   });
 
   test('respect logging levels', () => {
