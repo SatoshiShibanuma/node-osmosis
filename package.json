@@ -1,6 +1,6 @@
 {
-  "name": "osmosis",
-  "version": "1.1.10",
+  "name": "node-osmosis",
+  "version": "1.1.11",
   "description": "Web scraper for NodeJS",
   "keywords": [
     "web",
@@ -24,19 +24,38 @@
     "needle": "^1.6.0"
   },
   "devDependencies": {
-    "jscs": ">=3.0.2",
-    "nodeunit": "0.11.3"
+    "@types/node": "^18.15.0",
+    "eslint": "^8.36.0",
+    "eslint-config-recommended": "^4.1.0",
+    "jest": "^29.5.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.5"
   },
   "scripts": {
-    "test": "node ./node_modules/.bin/nodeunit test"
+    "test": "jest",
+    "lint": "eslint . --ext .js,.ts",
+    "lint:fix": "eslint . --ext .js,.ts --fix",
+    "prepare": "tsc",
+    "clean": "rm -rf dist"
   },
   "license": "MIT",
-  "main": "index",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "engines": {
-    "node": ">= 0.8.0"
+    "node": ">= 14.0.0"
   },
   "readmeFilename": "Readme.md",
   "bugs": {
     "url": "https://github.com/rchipka/node-osmosis/issues"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {}
+  },
+  "eslintConfig": {
+    "extends": "recommended",
+    "rules": {
+      "no-console": "off"
+    }
   }
 }
