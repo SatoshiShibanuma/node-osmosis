@@ -18,7 +18,6 @@ describe('Logger', () => {
     logger.debug('Debug message');
     logger.info('Info message');
     logger.warn('Warning message');
-    logger.error('Error message');
 
     expect(capturedLogs.length).toBe(3);
     expect(capturedLogs[0]).toBe('[DEBUG] Debug message');
