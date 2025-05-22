@@ -1,14 +1,14 @@
 {
-  "name": "osmosis",
-  "version": "1.1.10",
+  "name": "node-osmosis",
+  "version": "1.2.0",
   "description": "Web scraper for NodeJS",
   "keywords": [
     "web",
-    "scraper",
-    "crawler",
-    "html",
-    "xml",
-    "dom",
+    "scraper", 
+    "crawler", 
+    "html", 
+    "xml", 
+    "dom", 
     "parser"
   ],
   "repository": {
@@ -19,24 +19,40 @@
     "name": "rchipka",
     "email": "chipka01@email.franklin.edu"
   },
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "dependencies": {
     "libxmljs-dom": "~0.0.17",
-    "needle": "^1.6.0"
+    "needle": "^3.2.0"
   },
   "devDependencies": {
-    "jscs": ">=3.0.2",
-    "nodeunit": "0.11.3"
+    "@types/node": "^18.15.11",
+    "eslint": "^8.38.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "nodeunit": "^0.11.3",
+    "typescript": "^5.0.4"
   },
   "scripts": {
-    "test": "node ./node_modules/.bin/nodeunit test"
+    "test": "node --experimental-vm-modules ./node_modules/.bin/nodeunit test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prepare": "npm run lint"
   },
   "license": "MIT",
-  "main": "index",
-  "engines": {
-    "node": ">= 0.8.0"
-  },
-  "readmeFilename": "Readme.md",
   "bugs": {
     "url": "https://github.com/rchipka/node-osmosis/issues"
+  },
+  "eslintConfig": {
+    "extends": "standard",
+    "rules": {
+      "no-unused-vars": "warn",
+      "no-console": "off"
+    }
   }
 }
