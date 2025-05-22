@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { Logger, LogLevel } = require('../lib/logger');
 
-// Create a custom test runner
+// Custom test runner
 function runTests() {
   const tests = [
     function testLogToConsole() {
@@ -42,7 +42,14 @@ function runTests() {
     },
 
     function testLogToFile() {
-      const logFilePath = path.join(process.cwd(), `test-${Date.now()}.log`);
+      const logDir = path.join(process.cwd(), 'test-logs');
+      
+      // Ensure log directory exists
+      if (!fs.existsSync(logDir)) {
+        fs.mkdirSync(logDir);
+      }
+
+      const logFilePath = path.join(logDir, `test-${Date.now()}.log`);
       const logger = new Logger({ 
         level: LogLevel.DEBUG, 
         logToConsole: false, 
@@ -57,7 +64,10 @@ function runTests() {
 
       logger.close();
 
+      // Check file exists and has content
+      assert.ok(fs.existsSync(logFilePath), 'Log file should be created');
       const logContents = fs.readFileSync(logFilePath, 'utf8');
+      
       assert.ok(logContents.includes('Error message'), 'Error message should be in log file');
       assert.ok(logContents.includes('Warning message'), 'Warning message should be in log file');
       assert.ok(logContents.includes('Info message'), 'Info message should be in log file');
@@ -65,6 +75,7 @@ function runTests() {
 
       // Clean up log file
       fs.unlinkSync(logFilePath);
+      fs.rmdirSync(logDir);
 
       console.log('testLogToFile passed');
     },
@@ -102,12 +113,12 @@ function runTests() {
     } catch (error) {
       console.error(`Test failed: ${test.name}`);
       console.error(error);
-      process.exit(1);
+      throw error;  // Re-throw to fail the test
     }
   });
 
   console.log('All tests passed!');
 }
 
-// Run the tests
-runTests();
+// Export the test runner for Jest
+module.exports = runTests;
