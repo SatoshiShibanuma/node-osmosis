@@ -52,6 +52,9 @@ describe('Logger', () => {
   it('should not log messages above configured log level', () => {
     const logger = new Logger({ logLevel: 'error', logFile });
     
+    // Force creation of log file before logging
+    fs.writeFileSync(logFile, '');
+    
     const originalConsoleInfo = console.info;
     let loggedMessage = null;
     console.info = (msg) => { loggedMessage = msg; };
