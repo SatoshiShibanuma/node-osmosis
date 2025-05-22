@@ -1,124 +1,132 @@
-const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const { Logger, LogLevel } = require('../lib/logger');
 
-// Custom test runner
-function runTests() {
-  const tests = [
-    function testLogToConsole() {
-      const originalConsoleLog = console.log;
-      const originalConsoleError = console.error;
-      const originalConsoleWarn = console.warn;
-      const originalConsoleInfo = console.info;
-      const originalConsoleDebug = console.debug;
+describe('Logger', () => {
+  describe('Console Logging', () => {
+    let originalConsoleLog;
+    let originalConsoleError;
+    let originalConsoleWarn;
+    let originalConsoleInfo;
+    let originalConsoleDebug;
+    let loggedMessages;
 
-      let loggedMessages = [];
+    beforeEach(() => {
+      // Store original console methods
+      originalConsoleLog = console.log;
+      originalConsoleError = console.error;
+      originalConsoleWarn = console.warn;
+      originalConsoleInfo = console.info;
+      originalConsoleDebug = console.debug;
 
+      // Setup message capture
+      loggedMessages = [];
       console.log = console.error = console.warn = console.info = console.debug = (msg) => {
         loggedMessages.push(msg);
       };
+    });
 
-      const logger = new Logger({ level: LogLevel.DEBUG });
-      logger.error('Error message');
-      logger.warn('Warning message');
-      logger.info('Info message');
-      logger.debug('Debug message');
-
-      assert.strictEqual(loggedMessages.length, 4, 'Should log 4 messages');
-      assert.ok(loggedMessages[0].includes('Error message'), 'Error message should be logged');
-      assert.ok(loggedMessages[1].includes('Warning message'), 'Warning message should be logged');
-      assert.ok(loggedMessages[2].includes('Info message'), 'Info message should be logged');
-      assert.ok(loggedMessages[3].includes('Debug message'), 'Debug message should be logged');
-
+    afterEach(() => {
       // Restore original console methods
       console.log = originalConsoleLog;
       console.error = originalConsoleError;
       console.warn = originalConsoleWarn;
       console.info = originalConsoleInfo;
       console.debug = originalConsoleDebug;
+    });
 
-      console.log('testLogToConsole passed');
-    },
+    test('should log messages at different levels', () => {
+      const logger = new Logger({ level: LogLevel.DEBUG });
+      logger.error('Error message');
+      logger.warn('Warning message');
+      logger.info('Info message');
+      logger.debug('Debug message');
 
-    function testLogToFile() {
-      const logDir = path.join(process.cwd(), 'test-logs');
+      expect(loggedMessages.length).toBe(4);
+      expect(loggedMessages[0]).toContain('Error message');
+      expect(loggedMessages[1]).toContain('Warning message');
+      expect(loggedMessages[2]).toContain('Info message');
+      expect(loggedMessages[3]).toContain('Debug message');
+    });
+  });
+
+  describe('File Logging', () => {
+    let logDir;
+    let logFilePath;
+    let logger;
+
+    beforeEach(() => {
+      logDir = path.join(process.cwd(), 'test-logs');
       
       // Ensure log directory exists
       if (!fs.existsSync(logDir)) {
         fs.mkdirSync(logDir);
       }
 
-      const logFilePath = path.join(logDir, `test-${Date.now()}.log`);
-      const logger = new Logger({ 
+      logFilePath = path.join(logDir, `test-${Date.now()}.log`);
+      logger = new Logger({ 
         level: LogLevel.DEBUG, 
         logToConsole: false, 
         logToFile: true, 
         filePath: logFilePath 
       });
+    });
 
+    afterEach(() => {
+      logger.close();
+      
+      // Clean up log file and directory
+      if (fs.existsSync(logFilePath)) {
+        fs.unlinkSync(logFilePath);
+      }
+      if (fs.existsSync(logDir)) {
+        fs.rmdirSync(logDir);
+      }
+    });
+
+    test('should write logs to file', () => {
       logger.error('Error message');
       logger.warn('Warning message');
       logger.info('Info message');
       logger.debug('Debug message');
 
-      logger.close();
-
-      // Check file exists and has content
-      assert.ok(fs.existsSync(logFilePath), 'Log file should be created');
-      const logContents = fs.readFileSync(logFilePath, 'utf8');
+      // Ensure file exists and has content
+      expect(fs.existsSync(logFilePath)).toBe(true);
       
-      assert.ok(logContents.includes('Error message'), 'Error message should be in log file');
-      assert.ok(logContents.includes('Warning message'), 'Warning message should be in log file');
-      assert.ok(logContents.includes('Info message'), 'Info message should be in log file');
-      assert.ok(logContents.includes('Debug message'), 'Debug message should be in log file');
+      const logContents = fs.readFileSync(logFilePath, 'utf8');
+      expect(logContents).toContain('Error message');
+      expect(logContents).toContain('Warning message');
+      expect(logContents).toContain('Info message');
+      expect(logContents).toContain('Debug message');
+    });
+  });
 
-      // Clean up log file
-      fs.unlinkSync(logFilePath);
-      fs.rmdirSync(logDir);
+  describe('Log Level Configuration', () => {
+    let originalConsoleLog;
+    let loggedMessages;
 
-      console.log('testLogToFile passed');
-    },
-
-    function testLogLevelConfiguration() {
-      const originalConsoleLog = console.log;
-      let loggedMessages = [];
-
+    beforeEach(() => {
+      originalConsoleLog = console.log;
+      loggedMessages = [];
       console.log = console.error = console.warn = console.info = console.debug = (msg) => {
         loggedMessages.push(msg);
       };
+    });
 
-      // Set log level to WARN, should only log WARN and ERROR
+    afterEach(() => {
+      console.log = originalConsoleLog;
+    });
+
+    test('should respect log level configuration', () => {
       const logger = new Logger({ level: LogLevel.WARN });
       logger.error('Error message');
       logger.warn('Warning message');
       logger.info('Info message');
       logger.debug('Debug message');
 
-      assert.strictEqual(loggedMessages.length, 2, 'Should only log 2 messages at WARN level');
-      assert.ok(loggedMessages[0].includes('Error message'), 'Error message should be logged');
-      assert.ok(loggedMessages[1].includes('Warning message'), 'Warning message should be logged');
-
-      // Restore original console methods
-      console.log = originalConsoleLog;
-
-      console.log('testLogLevelConfiguration passed');
-    }
-  ];
-
-  // Run tests
-  tests.forEach(test => {
-    try {
-      test();
-    } catch (error) {
-      console.error(`Test failed: ${test.name}`);
-      console.error(error);
-      throw error;  // Re-throw to fail the test
-    }
+      expect(loggedMessages.length).toBe(2);
+      expect(loggedMessages[0]).toContain('Error message');
+      expect(loggedMessages[1]).toContain('Warning message');
+    });
   });
-
-  console.log('All tests passed!');
-}
-
-// Export the test runner for Jest
-module.exports = runTests;
+});
