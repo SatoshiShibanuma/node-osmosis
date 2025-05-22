@@ -1,4 +1,16 @@
 language: node_js
 node_js:
-#  - "0.10"
- - 8
+  - "14"
+  - "16"
+  - "18"
+  - "20"
+
+install:
+  - npm ci
+
+script:
+  - npm run lint
+  - npm test
+
+notifications:
+  email: false
