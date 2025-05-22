@@ -4,6 +4,14 @@ const path = require('path');
 const Logger = require('../lib/logger');
 
 function clearLogFile(logFile) {
+  const logDir = path.dirname(logFile);
+  
+  // Ensure log directory exists
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+
+  // Clear log file if it exists
   if (fs.existsSync(logFile)) {
     fs.unlinkSync(logFile);
   }
