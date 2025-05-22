@@ -28,7 +28,7 @@
     "nodeunit": "0.11.3"
   },
   "scripts": {
-    "test": "node ./node_modules/.bin/nodeunit test"
+    "test": "node test/logger.test.js"
   },
   "license": "MIT",
   "main": "index",

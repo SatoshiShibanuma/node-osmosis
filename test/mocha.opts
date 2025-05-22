@@ -1,0 +1,4 @@
+--require assert
+--reporter spec
+--slow 5000
+--timeout 10000
