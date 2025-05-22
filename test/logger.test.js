@@ -60,10 +60,14 @@ describe('Logger', () => {
       
       // Ensure log directory exists
       if (!fs.existsSync(logDir)) {
-        fs.mkdirSync(logDir);
+        fs.mkdirSync(logDir, { recursive: true });
       }
 
       logFilePath = path.join(logDir, `test-${Date.now()}.log`);
+      
+      // Pre-create the log file to avoid race conditions
+      fs.writeFileSync(logFilePath, '');
+      
       logger = new Logger({ 
         level: LogLevel.DEBUG, 
         logToConsole: false, 
@@ -89,6 +93,12 @@ describe('Logger', () => {
       logger.warn('Warning message');
       logger.info('Info message');
       logger.debug('Debug message');
+      
+      // Add a small delay to ensure file is written
+      jest.useFakeTimers().advanceTimersByTime(100);
+      
+      // Flush the log file
+      logger.close();
 
       // Ensure file exists and has content
       expect(fs.existsSync(logFilePath)).toBe(true);
