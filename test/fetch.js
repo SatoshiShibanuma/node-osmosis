@@ -2,7 +2,6 @@ const assert = require('assert');
 const osmosis = require('../index');
 
 if (typeof describe !== 'function') {
-    // Basic test runner for environments without testing framework
     function describe(name, testSuite) {
         console.log(`Running test suite: ${name}`);
         testSuite();
@@ -28,5 +27,15 @@ describe('Fetch Command', () => {
     it('should create a chainable command', () => {
         const instance = osmosis.fetch('https://example.com');
         assert.equal(typeof instance, 'function', 'Fetch did not return a chainable command');
+    });
+
+    it('should support optional timeout configuration', () => {
+        const instance = osmosis.fetch('https://example.com', { timeout: 5000 });
+        assert.equal(typeof instance, 'function', 'Fetch with timeout did not return a chainable command');
+    });
+
+    it('should support optional logging configuration', () => {
+        const instance = osmosis.fetch('https://example.com', { log: true });
+        assert.equal(typeof instance, 'function', 'Fetch with log option did not return a chainable command');
     });
 });
