@@ -25,10 +25,11 @@
   },
   "devDependencies": {
     "jscs": ">=3.0.2",
-    "nodeunit": "0.11.3"
+    "nodeunit": "0.11.3",
+    "mocha": "^10.0.0"
   },
   "scripts": {
-    "test": "node ./node_modules/.bin/nodeunit test"
+    "test": "mocha test/**/*.js"
   },
   "license": "MIT",
   "main": "index",
