@@ -1,6 +1,19 @@
 const assert = require('assert');
 const osmosis = require('../index');
 
+if (typeof describe !== 'function') {
+    // Basic test runner for environments without testing framework
+    function describe(name, testSuite) {
+        console.log(`Running test suite: ${name}`);
+        testSuite();
+    }
+
+    function it(testName, testFn) {
+        console.log(`Running test: ${testName}`);
+        testFn();
+    }
+}
+
 describe('Fetch Command', () => {
     it('should define a fetch method', () => {
         assert.equal(typeof osmosis.fetch, 'function', 'Fetch method is not defined');
