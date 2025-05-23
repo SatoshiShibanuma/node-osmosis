@@ -1,51 +1,50 @@
-const test = require('tape');
-const osmosis = require('../');
+var osmosis = require('../');
 
-test('fetch command basic functionality', (t) => {
-  t.plan(4);
+describe('fetch command', function() {
+  it('should fetch a URL with basic functionality', function(done) {
+    var url = 'http://example.com';
+    
+    osmosis
+      .fetch(url)
+      .then(function(context) {
+        assert(context.fetch, 'Fetch method should be added to context');
+        done();
+      })
+      .error(function(err) {
+        done(err);
+      });
+  });
 
-  const testUrl = 'http://example.com';
+  it('should throw an error for invalid URL types', function() {
+    assert.throws(
+      () => osmosis.fetch(123),
+      /Invalid URL/,
+      'Should throw error for non-string URL'
+    );
 
-  osmosis
-    .fetch(testUrl)
-    .then(function(context) {
-      t.ok(context.fetch, 'Fetch method should be added to context');
-      t.pass('Fetch command can be chained');
-    })
-    .error(function(err) {
-      t.fail('Should not encounter an error: ' + err);
-    });
+    assert.throws(
+      () => osmosis.fetch('invalid-url'),
+      /Invalid URL/,
+      'Should throw error for invalid URL format'
+    );
+  });
 
-  t.throws(
-    () => osmosis.fetch(123),
-    /Invalid URL/,
-    'Should throw error for non-string URL'
-  );
+  it('should support fetch with custom options', function(done) {
+    var url = 'http://example.com';
+    var customOptions = {
+      timeout: 10000,
+      userAgent: 'Custom Test Agent',
+      followRedirects: false
+    };
 
-  t.throws(
-    () => osmosis.fetch('invalid-url'),
-    /Invalid URL/,
-    'Should throw error for invalid URL format'
-  );
-});
-
-test('fetch command with options', (t) => {
-  t.plan(2);
-
-  const testUrl = 'http://example.com';
-  const customOptions = {
-    timeout: 10000,
-    userAgent: 'Custom Test Agent',
-    followRedirects: false
-  };
-
-  osmosis
-    .fetch(testUrl, customOptions)
-    .then(function(context) {
-      t.ok(context.fetch, 'Fetch method should be added to context with custom options');
-      t.pass('Fetch command can be chained with custom options');
-    })
-    .error(function(err) {
-      t.fail('Should not encounter an error: ' + err);
-    });
+    osmosis
+      .fetch(url, customOptions)
+      .then(function(context) {
+        assert(context.fetch, 'Fetch method should be added to context with custom options');
+        done();
+      })
+      .error(function(err) {
+        done(err);
+      });
+  });
 });
