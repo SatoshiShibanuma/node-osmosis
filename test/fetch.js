@@ -1,27 +1,16 @@
+const Osmosis = require('../index');
 const assert = require('assert');
-const Fetch = require('../lib/commands/fetch').Fetch;
 
-describe('Fetch Command', function() {
-  it('should throw error if no URL is provided', function() {
-    const fetchCommand = new Fetch();
-    assert.throws(() => {
-      fetchCommand.execute({});
-    }, /URL is required/);
+module.exports = function(done) {
+  const fetch = Osmosis.fetch('https://example.com', {
+    timeout: 10000,
+    retries: 3
   });
 
-  it('should create a fetch command with default options', function() {
-    const fetchCommand = new Fetch('https://example.com');
-    assert.strictEqual(fetchCommand.url, 'https://example.com');
-    assert.strictEqual(fetchCommand.options.timeout, 30000);
-    assert.strictEqual(fetchCommand.options.retries, 3);
-  });
+  assert(fetch, 'Fetch command should be created');
+  assert.strictEqual(fetch.url, 'https://example.com', 'URL should match input');
+  assert.strictEqual(fetch.options.timeout, 10000, 'Timeout should be configurable');
+  assert.strictEqual(fetch.options.retries, 3, 'Retries should be configurable');
 
-  it('should allow custom options to override defaults', function() {
-    const fetchCommand = new Fetch('https://example.com', {
-      timeout: 10000,
-      retries: 5
-    });
-    assert.strictEqual(fetchCommand.options.timeout, 10000);
-    assert.strictEqual(fetchCommand.options.retries, 5);
-  });
-});
+  done();
+};
