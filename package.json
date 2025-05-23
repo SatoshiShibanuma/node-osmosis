@@ -28,7 +28,8 @@
     "nodeunit": "0.11.3"
   },
   "scripts": {
-    "test": "node ./node_modules/.bin/nodeunit test"
+    "test": "node ./node_modules/.bin/nodeunit test",
+    "scrape": "node examples/basic-web-scraper.js"
   },
   "license": "MIT",
   "main": "index",
