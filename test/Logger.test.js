@@ -1,9 +1,15 @@
+const fs = require('fs');
+const path = require('path');
 const Logger = require('../lib/Logger');
 
 describe('Logger', () => {
   let consoleSpy;
+  let testLogFile;
 
   beforeEach(() => {
+    // Create a unique test log file for each test
+    testLogFile = path.join(process.cwd(), `test-${Date.now()}.log`);
+
     consoleSpy = {
       log: jest.spyOn(console, 'log').mockImplementation(),
       warn: jest.spyOn(console, 'warn').mockImplementation(),
@@ -12,68 +18,107 @@ describe('Logger', () => {
   });
 
   afterEach(() => {
+    // Restore console methods
     consoleSpy.log.mockRestore();
     consoleSpy.warn.mockRestore();
     consoleSpy.error.mockRestore();
+
+    // Remove test log file if it exists
+    if (fs.existsSync(testLogFile)) {
+      fs.unlinkSync(testLogFile);
+    }
   });
 
-  test('should log debug message when level is debug', () => {
-    const logger = new Logger({ level: 'debug' });
-    logger.debug('Test debug message', { data: 'test' });
-    expect(consoleSpy.log).toHaveBeenCalledWith(
-      expect.stringContaining('[DEBUG]'),
-      { data: 'test' }
-    );
-  });
+  test('logPageFetch logs successful page fetch', () => {
+    const logger = new Logger({ 
+      level: 'info', 
+      logFile: testLogFile 
+    });
+    const testUrl = 'https://example.com';
+    
+    logger.logPageFetch(testUrl, { statusCode: 200 });
 
-  test('should not log debug message when level is info', () => {
-    const logger = new Logger({ level: 'info' });
-    logger.debug('Test debug message');
-    expect(consoleSpy.log).not.toHaveBeenCalled();
-  });
-
-  test('should log info message', () => {
-    const logger = new Logger();
-    logger.info('Test info message', { data: 'test' });
+    // Check console output
     expect(consoleSpy.log).toHaveBeenCalledWith(
       expect.stringContaining('[INFO]'),
-      { data: 'test' }
+      expect.objectContaining({
+        url: testUrl,
+        statusCode: 200
+      })
     );
+
+    // Check log file content
+    const logContent = fs.readFileSync(testLogFile, 'utf-8');
+    const logEntry = JSON.parse(logContent.trim());
+    
+    expect(logEntry).toMatchObject({
+      level: 'info',
+      message: `Page fetched successfully: ${testUrl}`,
+      metadata: {
+        url: testUrl,
+        statusCode: 200
+      }
+    });
   });
 
-  test('should log warn message', () => {
-    const logger = new Logger();
-    logger.warn('Test warn message', { data: 'test' });
-    expect(consoleSpy.warn).toHaveBeenCalledWith(
-      expect.stringContaining('[WARN]'),
-      { data: 'test' }
-    );
-  });
+  test('logError logs network and parsing errors', () => {
+    const logger = new Logger({ 
+      level: 'error', 
+      logFile: testLogFile 
+    });
+    const testUrl = 'https://example.com';
+    const testError = new Error('Connection timeout');
 
-  test('should log error message', () => {
-    const logger = new Logger();
-    logger.error('Test error message', { data: 'test' });
+    logger.logError('network', testUrl, testError, { retryCount: 1 });
+
+    // Check console output
     expect(consoleSpy.error).toHaveBeenCalledWith(
       expect.stringContaining('[ERROR]'),
-      { data: 'test' }
+      expect.objectContaining({
+        type: 'network',
+        url: testUrl,
+        errorMessage: 'Connection timeout',
+        retryCount: 1
+      })
     );
+
+    // Check log file content
+    const logContent = fs.readFileSync(testLogFile, 'utf-8');
+    const logEntry = JSON.parse(logContent.trim());
+    
+    expect(logEntry).toMatchObject({
+      level: 'error',
+      message: 'NETWORK Error: Connection timeout',
+      metadata: {
+        type: 'network',
+        url: testUrl,
+        errorName: 'Error',
+        errorMessage: 'Connection timeout',
+        retryCount: 1
+      }
+    });
+    expect(logEntry.metadata.stack).toBeDefined();
   });
 
-  test('should respect log level configuration', () => {
-    const logger = new Logger({ level: 'warn' });
+  test('logger respects log level configuration', () => {
+    const logger = new Logger({ 
+      level: 'warn', 
+      logFile: testLogFile 
+    });
+
+    // These should not log
     logger.debug('Debug message');
     logger.info('Info message');
-    logger.warn('Warn message');
-    logger.error('Error message');
 
-    expect(consoleSpy.log).not.toHaveBeenCalled();
-    expect(consoleSpy.warn).toHaveBeenCalledWith(expect.stringContaining('[WARN]'), {});
-    expect(consoleSpy.error).toHaveBeenCalledWith(expect.stringContaining('[ERROR]'), {});
-  });
+    // This should log
+    logger.warn('Warning message', { context: 'test' });
 
-  test('should disable logging when enabled is false', () => {
-    const logger = new Logger({ enabled: false });
-    logger.info('Test message');
+    // Check console output
     expect(consoleSpy.log).not.toHaveBeenCalled();
+    expect(consoleSpy.error).not.toHaveBeenCalled();
+    expect(consoleSpy.warn).toHaveBeenCalledWith(
+      expect.stringContaining('[WARN]'),
+      { context: 'test' }
+    );
   });
 });
