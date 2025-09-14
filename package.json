@@ -20,20 +20,23 @@
     "email": "chipka01@email.franklin.edu"
   },
   "dependencies": {
-    "libxmljs-dom": "~0.0.17",
-    "needle": "^1.6.0"
+    "libxmljs-dom": "^0.18.4",
+    "needle": "^3.2.0"
   },
   "devDependencies": {
-    "jscs": ">=3.0.2",
-    "nodeunit": "0.11.3"
+    "@types/node": "^18.16.0",
+    "eslint": "^8.45.0",
+    "nodeunit": "^0.11.3"
   },
   "scripts": {
-    "test": "node ./node_modules/.bin/nodeunit test"
+    "test": "node ./node_modules/.bin/nodeunit test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "license": "MIT",
-  "main": "index",
+  "main": "index.js",
   "engines": {
-    "node": ">= 0.8.0"
+    "node": ">=14.0.0"
   },
   "readmeFilename": "Readme.md",
   "bugs": {
